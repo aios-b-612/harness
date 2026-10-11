@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-APP=opencode
+APP=harness
 SOURCE_APP=opencode
 
 MUTED='\033[0;2m'
@@ -386,6 +386,40 @@ else
 fi
 install_legacy_shim
 
+# --- Harness profile (agents/skills/defaults for every user) ---
+seed_aios_profile() {
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || true)"
+  local local_profile=""
+  if [[ -n "$script_dir" && -x "$script_dir/profile/bin/install-profile.sh" ]]; then
+    local_profile="$script_dir/profile/bin/install-profile.sh"
+  elif [[ -x "$PWD/profile/bin/install-profile.sh" ]]; then
+    local_profile="$PWD/profile/bin/install-profile.sh"
+  fi
+  if [[ -n "$local_profile" ]]; then
+    print_message info "\n${MUTED}Installing ${NC}Harness profile ${MUTED}(agents/skills)${NC}"
+    bash "$local_profile" || print_message warning "Harness profile install failed (non-fatal)"
+    return
+  fi
+  local tmp
+  tmp="$(mktemp -d)"
+  if curl -fsSL "https://codeload.github.com/aios-b-612/harness/tar.gz/dev" -o "$tmp/opencode.tgz" 2>/dev/null; then
+    tar -xzf "$tmp/opencode.tgz" -C "$tmp" 2>/dev/null || true
+    local found
+    found="$(find "$tmp" -type f -path '*/profile/bin/install-profile.sh' 2>/dev/null | head -1)"
+    if [[ -n "$found" ]]; then
+      print_message info "\n${MUTED}Installing ${NC}Harness profile ${MUTED}from aios-b-612/harness${NC}"
+      bash "$found" || print_message warning "Harness profile install failed (non-fatal)"
+    else
+      print_message warning "Harness profile not in archive (skip)"
+    fi
+  else
+    print_message warning "Could not fetch Harness profile — from clone: bash profile/bin/install-profile.sh"
+  fi
+  rm -rf "$tmp"
+}
+seed_aios_profile
+
 
 add_to_path() {
     local config_file=$1
@@ -478,11 +512,11 @@ echo -e "${MUTED}█░░█ █░░█ █▀▀▀ █░░█ ${NC}█░
 echo -e "${MUTED}▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ ${NC}▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀"
 echo -e ""
 echo -e ""
-echo -e "${MUTED}OpenCode includes free models, to start:${NC}"
+echo -e "${MUTED}Harness — Agent default. To start:${NC}"
 echo -e ""
 echo -e "cd <project>  ${MUTED}# Open directory${NC}"
 echo -e "opencode      ${MUTED}# Run command${NC}"
 echo -e ""
-echo -e "${MUTED}For more information visit ${NC}https://opencode.ai/v2/docs"
+echo -e "${MUTED}For more information visit https://github.com/aios-b-612/harness
 echo -e ""
 echo -e ""

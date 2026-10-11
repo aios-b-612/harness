@@ -1,0 +1,52 @@
+{
+  "$comment": "Defaults AIOS Harness — aplicados no install para todo usuário. Modelo global não força NVIDIA (cada um configura a chave); agents usam o model global.",
+  "default_agent": "agent",
+  "permission": {
+    "skill": {
+      "*": "allow"
+    }
+  },
+  "agent": {
+    "agent": {
+      "description": "DEFAULT — código + host/rede. Dia a dia AIOS.",
+      "mode": "primary",
+      "permission": {
+        "bash": "allow",
+        "edit": "allow",
+        "read": "allow",
+        "skill": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "doom_loop": "ask"
+      }
+    },
+    "multitask": {
+      "description": "Delega aos especialistas. Tarefas grandes multi-área.",
+      "mode": "primary"
+    },
+    "plan": {
+      "description": "Planeja sem editar. Depois volte ao Agent.",
+      "mode": "primary",
+      "permission": {
+        "edit": "deny",
+        "bash": "ask",
+        "skill": "allow",
+        "read": "allow"
+      }
+    },
+    "ask": {
+      "description": "Só leitura/explicação — sem edit/shell.",
+      "mode": "primary"
+    },
+    "debug": {
+      "description": "Reproduzir e isolar bugs com evidência.",
+      "mode": "primary"
+    },
+    "build": {
+      "disable": true,
+      "description": "DESATIVADO — use Agent."
+    }
+  }
+}
